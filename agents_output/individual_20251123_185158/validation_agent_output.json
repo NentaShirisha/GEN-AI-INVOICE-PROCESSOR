@@ -1,0 +1,82 @@
+{
+  "agent_name": "Validation Agent",
+  "session_id": "individual_20251123_185158",
+  "timestamp": "2025-11-23T18:51:58.852957",
+  "status": "needs_interaction",
+  "confidence": 0.2,
+  "message": "Validation failed with 20.00% confidence",
+  "data": {
+    "validation_output": {
+      "Invoice_No": "ORIGINAL",
+      "Vendor_ID": "N/A",
+      "PO_No": "N/A",
+      "Validation_Status": "Fail",
+      "Notes": "Vendor validation failed: Vendor not found in ERP database, Available vendor: VEN001 - TechCorp Solutions Inc., Available vendor: V001 - ABC Corp, Available vendor: V002 - XYZ Supplies, Available vendor: V003 - Tech Solutions Inc; PO validation failed: PO number not provided; Date validation failed: Invalid date format. Use MM/DD/YYYY or similar; Amount validated successfully"
+    },
+    "validation_results": {
+      "vendor": {
+        "valid": false,
+        "confidence": 0.0,
+        "suggestions": [
+          "Vendor not found in ERP database",
+          "Available vendor: VEN001 - TechCorp Solutions Inc.",
+          "Available vendor: V001 - ABC Corp",
+          "Available vendor: V002 - XYZ Supplies",
+          "Available vendor: V003 - Tech Solutions Inc"
+        ]
+      },
+      "po": {
+        "valid": false,
+        "confidence": 0.0,
+        "suggestions": [
+          "PO number not provided"
+        ]
+      },
+      "date": {
+        "valid": false,
+        "confidence": 0.0,
+        "parsed_date": null,
+        "suggestions": [
+          "Invalid date format. Use MM/DD/YYYY or similar"
+        ]
+      },
+      "amount": {
+        "valid": true,
+        "confidence": 0.8,
+        "suggestions": [
+          "Large amount - may require additional approval"
+        ]
+      }
+    },
+    "overall_valid": false,
+    "overall_confidence": 0.2,
+    "requires_review": true,
+    "error_summary": [
+      "Vendor not found in ERP database",
+      "Available vendor: VEN001 - TechCorp Solutions Inc.",
+      "Available vendor: V001 - ABC Corp",
+      "Available vendor: V002 - XYZ Supplies",
+      "Available vendor: V003 - Tech Solutions Inc",
+      "PO number not provided",
+      "Invalid date format. Use MM/DD/YYYY or similar",
+      "Large amount - may require additional approval"
+    ],
+    "extracted_fields": {
+      "customer_name": "RS LIMITED TAX INVOICE ORIGINAL FOR RECIPIENT TATA MOTORS LIMITED Nigadi Bhosari Road",
+      "email": "test@gmail.com",
+      "products": [
+        {
+          "hsn_sac": "67898369",
+          "quantity": "1",
+          "amount": "72042190645050.0018"
+        }
+      ],
+      "total_amount": 768771.0,
+      "total_amount_words": "INR Seven Lakh, SixtyEight Thousand, Seven Hundred And IGST 18.0% ₹1,16,109.00 SeventyOne Rupees Only. Round Off 0.41 Bank Details: Total ₹7,68,771.00 Bank: IDBI TCS @ 1% 206C ₹ 7611.58984375 Account #: 1234567890 Amount Payable ₹7,68,771.00 IFSC Code: IBKL0000432 Branch: GACHIBOWLI UPI ID: 7095285474@ybl BENEFICIARY NAME : ROMOLIKA SAHANI HSN/ SAC Taxable Value Integrated Tax Total Tax Amount Rate Amount 72042190645050.0018% 116109.00116109.00 TOTAL 6,45,050.001,16,109.00116109.00 Notes: For TATA MOTORS LIMITED Thankyou for shopping from us. See you again. Terms and Conditions: GOODS ONCE SOLD CANNOT BE RETURNED. ONLY GOODS THAT ARE DAMAGED CAN BE RETURNED Authorized Signatory UNDER SPECIFIC TERM S& CONDITIONS. Receiver's Signature Page 1 / 1 This is a digitally signed document.",
+      "invoice_number": "ORIGINAL",
+      "vendor_name": "TATA MOTORS LIMITED TAX INVOICE ORIGINAL FOR RECIPIENT TATA MOTORS",
+      "invoice_date": "500089"
+    }
+  },
+  "timestamp_iso": "2025-11-23T18:51:58.846333"
+}

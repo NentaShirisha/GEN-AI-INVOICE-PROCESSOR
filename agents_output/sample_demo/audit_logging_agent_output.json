@@ -1,0 +1,60 @@
+{
+  "agent_name": "Audit Logging Agent",
+  "session_id": "sample_demo",
+  "timestamp": "2025-11-27T12:04:00",
+  "status": "success",
+  "confidence": 1.0,
+  "message": "Complete audit trail generated",
+  "data": {
+    "audit_id": "AUDIT-sample_demo",
+    "invoice_number": "INV-2025-001",
+    "total_stages_completed": 5,
+    "total_processing_time_seconds": 45.8,
+    "pipeline_stages": [
+      {
+        "stage": "OCR Processing",
+        "status": "completed",
+        "duration_seconds": 8.5,
+        "confidence": 0.89
+      },
+      {
+        "stage": "Data Extraction",
+        "status": "completed",
+        "duration_seconds": 12.3,
+        "confidence": 0.92
+      },
+      {
+        "stage": "Validation",
+        "status": "completed",
+        "duration_seconds": 7.2,
+        "confidence": 0.88
+      },
+      {
+        "stage": "Exception Handling",
+        "status": "completed",
+        "duration_seconds": 5.1,
+        "confidence": 0.90
+      },
+      {
+        "stage": "ERP Integration",
+        "status": "completed",
+        "duration_seconds": 12.7,
+        "confidence": 0.95
+      }
+    ],
+    "compliance_checks": {
+      "sox_compliance": "passed",
+      "gdpr_compliance": "passed",
+      "data_retention_policy": "compliant",
+      "audit_trail_complete": true
+    },
+    "quality_metrics": {
+      "overall_confidence": 0.91,
+      "processing_accuracy": 0.95,
+      "straight_through_processing": true,
+      "manual_intervention_required": false
+    },
+    "summary": "Invoice INV-2025-001 from Acme Corporation Inc. processed successfully through all 5 pipeline stages. Total amount: $1,375.00. Posted to ERP system (SAP S/4HANA) with document number DOC-2025-001. No exceptions requiring manual review. All compliance checks passed.",
+    "recommendation": "Invoice approved for payment processing"
+  }
+}

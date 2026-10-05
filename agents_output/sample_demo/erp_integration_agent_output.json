@@ -1,0 +1,38 @@
+{
+  "agent_name": "ERP Integration Agent",
+  "session_id": "sample_demo",
+  "timestamp": "2025-11-27T12:03:00",
+  "status": "success",
+  "confidence": 0.95,
+  "message": "Invoice successfully posted to ERP system",
+  "data": {
+    "erp_status": "posted",
+    "erp_system": "SAP S/4HANA",
+    "erp_invoice_id": "ERP-INV-2025-12345",
+    "erp_transaction_id": "TXN-789456123",
+    "posting_date": "2025-11-27T12:03:00",
+    "document_number": "DOC-2025-001",
+    "fiscal_year": 2025,
+    "company_code": "1000",
+    "posting_key": "31",
+    "account_assignment": {
+      "gl_account": "2100000",
+      "cost_center": "CC-1001",
+      "profit_center": "PC-2001"
+    },
+    "payment_details": {
+      "payment_method": "Bank Transfer",
+      "bank_account": "****1234",
+      "payment_due_date": "2025-02-15"
+    },
+    "workflow_status": "approved",
+    "approval_chain": [
+      {
+        "approver": "John Manager",
+        "role": "Finance Manager",
+        "status": "approved",
+        "timestamp": "2025-11-27T12:03:00"
+      }
+    ]
+  }
+}

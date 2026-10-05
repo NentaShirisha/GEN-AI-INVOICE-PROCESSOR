@@ -1,0 +1,49 @@
+{
+  "agent_name": "Exception Handling Agent",
+  "session_id": "individual_20251127_001059",
+  "timestamp": "2025-11-27T00:10:59.510580",
+  "status": "needs_interaction",
+  "confidence": 0.5,
+  "message": "Found 1 validation issues requiring user input",
+  "data": {
+    "exception_output": {
+      "Invoice_No": "ORIGINAL",
+      "Vendor_ID": "N/A",
+      "PO_No": "N/A",
+      "Resolution": "The invoice date 'Unknown' appears to be invalid. Could you please provide the correct date in MM/DD/YYYY format?"
+    },
+    "issues": [
+      {
+        "type": "date_format",
+        "field": "invoice_date",
+        "question": "The invoice date 'Unknown' appears to be invalid. Could you please provide the correct date in MM/DD/YYYY format?",
+        "suggestions": [
+          "Date is required"
+        ]
+      }
+    ],
+    "correction_options": {
+      "auto_correct": [],
+      "user_input_required": [
+        {
+          "field": "invoice_date",
+          "question": "The invoice date 'Unknown' appears to be invalid. Could you please provide the correct date in MM/DD/YYYY format?",
+          "type": "input_required"
+        }
+      ],
+      "suggestions": [
+        "Date is required"
+      ]
+    },
+    "requires_user_input": true,
+    "error_log": [
+      "The invoice date 'Unknown' appears to be invalid. Could you please provide the correct date in MM/DD/YYYY format?"
+    ],
+    "candidate_corrections": [
+      [
+        "Date is required"
+      ]
+    ]
+  },
+  "timestamp_iso": "2025-11-27T00:10:59.509583"
+}

@@ -1,0 +1,23 @@
+{
+  "agent_name": "Exception Handling Agent",
+  "session_id": "sample_demo",
+  "timestamp": "2025-11-27T12:02:00",
+  "status": "success",
+  "confidence": 0.90,
+  "message": "All exceptions handled successfully",
+  "data": {
+    "exceptions_handled": 2,
+    "auto_resolved": [
+      "date_format_standardized",
+      "payment_terms_verified"
+    ],
+    "manual_review_required": [],
+    "corrections_made": {
+      "invoice_date": "2025-01-15",
+      "due_date": "2025-02-15"
+    },
+    "resolution_summary": "Minor formatting issues were automatically corrected. Invoice is ready for ERP integration.",
+    "risk_level": "low",
+    "approval_status": "auto_approved"
+  }
+}

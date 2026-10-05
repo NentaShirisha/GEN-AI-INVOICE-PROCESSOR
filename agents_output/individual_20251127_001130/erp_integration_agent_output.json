@@ -1,0 +1,22 @@
+{
+  "agent_name": "ERP Integration Agent",
+  "session_id": "individual_20251127_001130",
+  "timestamp": "2025-11-27T00:11:30.205316",
+  "status": "success",
+  "confidence": 0.9,
+  "message": "Invoice successfully integrated with SAP",
+  "data": {
+    "erp_system": "sap",
+    "transaction_id": "ERP-20251127001130",
+    "mapped_data": "<IDOC BEGIN=\"1\"><EDI_DC40><IDOCTYP>INVOIC02</IDOCTYP><MESTYP>INVOIC</MESTYP><SNDPOR>AI_INVOICE</SNDPOR><SNDPRT>LS</SNDPRT><SNDPRN>AI_SYSTEM</SNDPRN></EDI_DC40><E1EDK01><BELNR /><BUDAT /><WAERK>USD</WAERK></E1EDK01><E1EDKA1 PARVW=\"LF\"><LIFNR /><NAME1 /></E1EDKA1><E1EDP01><POSEX>1</POSEX><MENGE>1</MENGE><MENEE>EA</MENEE><NETWR>0</NETWR></E1EDP01></IDOC>",
+    "api_response": {
+      "success": true,
+      "erp_system": "sap",
+      "transaction_id": "ERP-20251127001130",
+      "status": "posted",
+      "message": "Invoice successfully posted to SAP"
+    },
+    "integration_status": "success"
+  },
+  "timestamp_iso": "2025-11-27T00:11:30.201359"
+}

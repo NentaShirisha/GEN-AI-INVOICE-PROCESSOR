@@ -1,0 +1,146 @@
+{
+  "agent_name": "Audit Logging Agent",
+  "session_id": "individual_20251127_001135",
+  "timestamp": "2025-11-27T00:11:35.416001",
+  "status": "success",
+  "confidence": 0.7,
+  "message": "Audit completed with 1 anomalies detected",
+  "data": {
+    "audit_output": {
+      "Final_Structured_Invoice": {
+        "Invoice_No": "ORIGINAL",
+        "Vendor_ID": "N/A",
+        "PO_No": "N/A",
+        "Invoice_Date": "N/A",
+        "Total_Amount": 768771.0,
+        "Currency": "USD",
+        "Status": "flagged_for_review"
+      },
+      "End_to_End_Process_Log": [
+        {
+          "step": 1,
+          "agent": "Data Extraction Agent",
+          "status": "success",
+          "timestamp": "2025-11-27T00:11:35.192176",
+          "message": "Extracted 6 fields with 70.00% confidence using AI models",
+          "confidence": 0.7
+        },
+        {
+          "step": 2,
+          "agent": "Validation Agent",
+          "status": "needs_interaction",
+          "timestamp": "2025-11-27T00:11:35.193172",
+          "message": "Validation failed with 20.00% confidence",
+          "confidence": 0.2
+        }
+      ],
+      "Processing_Summary": {
+        "Total_Agents": 2,
+        "Successful": 1,
+        "Failed": 0,
+        "Processing_Time_Seconds": 0.000996,
+        "Anomalies_Count": 1
+      }
+    },
+    "compliance_report": {
+      "audit_header": {
+        "invoice_id": "audit_20251127_001135",
+        "original_file": "",
+        "processing_date": "2025-11-27T00:11:35.414039",
+        "compliance_standard": "SOX_AI_Processing_v1.0"
+      },
+      "processing_summary": {
+        "total_agents": 2,
+        "successful_agents": 1,
+        "failed_agents": 0,
+        "user_interactions": 1,
+        "processing_time_seconds": 0.000996
+      },
+      "invoice_data": {
+        "invoice_number": "ORIGINAL",
+        "vendor_name": null,
+        "vendor_id": null,
+        "po_number": null,
+        "total_amount": 768771.0,
+        "invoice_date": null,
+        "final_status": "flagged_for_review"
+      },
+      "anomalies": [
+        {
+          "type": "low_confidence",
+          "severity": "medium",
+          "agent": "Validation Agent",
+          "confidence": 0.2,
+          "message": "Low confidence score: 20.00%",
+          "timestamp": "2025-11-27T00:11:35.193172"
+        }
+      ],
+      "agent_history": [
+        {
+          "agent_name": "Data Extraction Agent",
+          "status": "success",
+          "confidence": 0.7,
+          "message": "Extracted 6 fields with 70.00% confidence using AI models",
+          "timestamp": "2025-11-27T00:11:35.192176"
+        },
+        {
+          "agent_name": "Validation Agent",
+          "status": "needs_interaction",
+          "confidence": 0.2,
+          "message": "Validation failed with 20.00% confidence",
+          "timestamp": "2025-11-27T00:11:35.193172"
+        }
+      ],
+      "validation_results": {
+        "vendor": {
+          "valid": false,
+          "confidence": 0.0,
+          "suggestions": [
+            "Vendor information not provided",
+            "Available vendor: VEN001 - TechCorp Solutions Inc.",
+            "Available vendor: V001 - ABC Corp",
+            "Available vendor: V002 - XYZ Supplies",
+            "Available vendor: V003 - Tech Solutions Inc"
+          ]
+        },
+        "po": {
+          "valid": false,
+          "confidence": 0.0,
+          "suggestions": [
+            "PO number not provided"
+          ]
+        },
+        "date": {
+          "valid": false,
+          "confidence": 0.0,
+          "parsed_date": null,
+          "suggestions": [
+            "Date is required"
+          ]
+        },
+        "amount": {
+          "valid": true,
+          "confidence": 0.8,
+          "suggestions": [
+            "Large amount - may require additional approval"
+          ]
+        }
+      },
+      "erp_integration": {}
+    },
+    "human_readable_summary": " Audit Summary for Invoice ORIGINAL\n==================================================\n  Processing Time: 0.0 seconds\n Agents Executed: 2 total\n Successful: 1\n User Interactions: 1\n\n Invoice Details:\n   Vendor: None\n   Amount: \n   Date: None\n   PO: None\n\n  Issues Found: 1\n    Low Confidence: Low confidence score: 20.00%\n\n  Final Status: Flagged for Review",
+    "processing_metrics": {
+      "total_processing_time_seconds": 0.000996,
+      "start_time": "2025-11-27T00:11:35.192176",
+      "end_time": "2025-11-27T00:11:35.193172",
+      "agents_executed": [
+        "Data Extraction Agent",
+        "Validation Agent"
+      ],
+      "agent_count": 2
+    },
+    "anomalies_count": 1,
+    "audit_complete": true
+  },
+  "timestamp_iso": "2025-11-27T00:11:35.414039"
+}

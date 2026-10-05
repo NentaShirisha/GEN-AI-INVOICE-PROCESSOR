@@ -1,0 +1,46 @@
+{
+  "agent_name": "Validation Agent",
+  "session_id": "sample_demo",
+  "timestamp": "2025-11-27T12:01:00",
+  "status": "success",
+  "confidence": 0.88,
+  "message": "Validation completed with minor warnings",
+  "data": {
+    "is_valid": true,
+    "validation_passed": true,
+    "issues_found": 2,
+    "issues": [
+      {
+        "type": "format_warning",
+        "severity": "low",
+        "description": "Date format could be standardized to ISO format",
+        "field": "invoice_date",
+        "expected": "YYYY-MM-DD",
+        "actual": "2025-01-15",
+        "auto_corrected": false
+      },
+      {
+        "type": "business_rule",
+        "severity": "low",
+        "description": "Payment terms are standard Net 30",
+        "field": "payment_terms",
+        "status": "acceptable"
+      }
+    ],
+    "warnings": [
+      "Total amount matches line items sum",
+      "Tax calculation verified"
+    ],
+    "passed_rules": [
+      "vendor_exists_in_system",
+      "amount_is_positive",
+      "date_is_valid",
+      "tax_calculation_correct",
+      "line_items_sum_matches_subtotal",
+      "po_number_format_valid"
+    ],
+    "failed_rules": [],
+    "business_rules_checked": 15,
+    "business_rules_passed": 13
+  }
+}
