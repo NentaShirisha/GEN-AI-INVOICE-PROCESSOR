@@ -1,0 +1,264 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🚀 Run AI Models</h1>
+    <p>Select an uploaded invoice and run individual AI models or the complete pipeline</p>
+</div>
+
+<div class="stage-info">
+    <h3>📁 Select Invoice to Process</h3>
+    <div class="invoice-selector">
+        <select id="invoiceSelect" class="form-select" style="padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            <option value="">-- Select an Invoice --</option>
+            {% for file in invoice_files %}
+            <option value="{{ file.session_id }}" data-filename="{{ file.original_filename }}" data-status="{{ file.status }}">
+                {{ file.original_filename }} - {{ file.get_status_display }} ({{ file.uploaded_at|date:"M d, Y H:i" }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div id="selectedInvoiceInfo" style="display: none; background: rgba(102, 126, 234, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0;">Selected Invoice</h4>
+        <p><strong>Filename:</strong> <span id="infoFilename"></span></p>
+        <p><strong>Status:</strong> <span id="infoStatus"></span></p>
+        <p><strong>Session ID:</strong> <span id="infoSessionId"></span></p>
+    </div>
+</div>
+
+<div class="model-chain">
+    <div class="model-step" id="step-ocr">
+        <div>🔍</div>
+        <div>OCR</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step" id="step-extraction">
+        <div>🤖</div>
+        <div>Extraction</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step" id="step-validation">
+        <div>✅</div>
+        <div>Validation</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step" id="step-exception">
+        <div>⚠️</div>
+        <div>Exception</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step" id="step-erp">
+        <div>🔗</div>
+        <div>ERP</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step" id="step-audit">
+        <div>📋</div>
+        <div>Audit</div>
+    </div>
+</div>
+
+<div class="stage-info">
+    <h3>🎯 Run Individual Models</h3>
+    <p>Execute specific AI models independently for testing or reprocessing</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+        <!-- OCR Model -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h4 style="color: #667eea; margin-top: 0;">🔍 OCR Processing</h4>
+            <p style="font-size: 0.9em; color: #666;">Extract text from invoice document</p>
+            <button class="btn btn-primary" onclick="runModel('ocr')" id="btn-ocr" disabled>
+                Run OCR
+            </button>
+        </div>
+        
+        <!-- Data Extraction Model -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h4 style="color: #667eea; margin-top: 0;">🤖 Data Extraction</h4>
+            <p style="font-size: 0.9em; color: #666;">Extract structured data fields</p>
+            <button class="btn btn-primary" onclick="runModel('extraction')" id="btn-extraction" disabled>
+                Run Extraction
+            </button>
+        </div>
+        
+        <!-- Validation Model -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h4 style="color: #667eea; margin-top: 0;">✅ Validation</h4>
+            <p style="font-size: 0.9em; color: #666;">Validate extracted data</p>
+            <button class="btn btn-primary" onclick="runModel('validation')" id="btn-validation" disabled>
+                Run Validation
+            </button>
+        </div>
+        
+        <!-- Exception Handling Model -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h4 style="color: #667eea; margin-top: 0;">⚠️ Exception Handling</h4>
+            <p style="font-size: 0.9em; color: #666;">Resolve validation issues</p>
+            <button class="btn btn-primary" onclick="runModel('exception')" id="btn-exception" disabled>
+                Run Exception
+            </button>
+        </div>
+        
+        <!-- ERP Integration Model -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h4 style="color: #667eea; margin-top: 0;">🔗 ERP Integration</h4>
+            <p style="font-size: 0.9em; color: #666;">Post to ERP system</p>
+            <button class="btn btn-primary" onclick="runModel('erp')" id="btn-erp" disabled>
+                Run ERP
+            </button>
+        </div>
+        
+        <!-- Audit Logging Model -->
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h4 style="color: #667eea; margin-top: 0;">📋 Audit Logging</h4>
+            <p style="font-size: 0.9em; color: #666;">Generate audit trail</p>
+            <button class="btn btn-primary" onclick="runModel('audit')" id="btn-audit" disabled>
+                Run Audit
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="stage-info">
+    <h3>⚡ Run Complete Pipeline</h3>
+    <p>Execute all models sequentially in the correct order</p>
+    
+    <div class="action-buttons">
+        <button class="btn btn-primary" onclick="runCompletePipeline()" id="btn-pipeline" disabled style="font-size: 1.1em; padding: 15px 30px;">
+            <i class="fas fa-play-circle"></i> Run Complete Pipeline
+        </button>
+    </div>
+</div>
+
+<div id="processingResults" style="display: none; margin-top: 30px;">
+    <div class="stage-info">
+        <h3>📊 Processing Results</h3>
+        <div id="resultsContent" class="data-display">
+            <pre id="resultsData"></pre>
+        </div>
+    </div>
+</div>
+
+{% if not invoice_files %}
+<div class="stage-info" style="text-align: center; padding: 40px;">
+    <h3>📭 No Invoices Available</h3>
+    <p>Upload an invoice first to run models</p>
+    <a href="{% url 'upload_page' %}" class="btn btn-primary" style="margin-top: 20px;">
+        Upload Invoice
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .model-step {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .model-step:hover {
+        transform: scale(1.05);
+    }
+    
+    .form-select {
+        background: white;
+        border: 2px solid #667eea;
+        font-size: 1em;
+    }
+    
+    .form-select:focus {
+        border-color: #764ba2;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedSessionId = null;
+
+document.getElementById('invoiceSelect').addEventListener('change', function() {
+    const select = this;
+    selectedSessionId = select.value;
+    
+    if (selectedSessionId) {
+        const option = select.options[select.selectedIndex];
+        const filename = option.getAttribute('data-filename');
+        const status = option.getAttribute('data-status');
+        
+        // Show invoice info
+        document.getElementById('selectedInvoiceInfo').style.display = 'block';
+        document.getElementById('infoFilename').textContent = filename;
+        document.getElementById('infoStatus').textContent = status;
+        document.getElementById('infoSessionId').textContent = selectedSessionId;
+        
+        // Enable all buttons
+        document.getElementById('btn-ocr').disabled = false;
+        document.getElementById('btn-extraction').disabled = false;
+        document.getElementById('btn-validation').disabled = false;
+        document.getElementById('btn-exception').disabled = false;
+        document.getElementById('btn-erp').disabled = false;
+        document.getElementById('btn-audit').disabled = false;
+        document.getElementById('btn-pipeline').disabled = false;
+    } else {
+        document.getElementById('selectedInvoiceInfo').style.display = 'none';
+        disableAllButtons();
+    }
+});
+
+function disableAllButtons() {
+    document.getElementById('btn-ocr').disabled = true;
+    document.getElementById('btn-extraction').disabled = true;
+    document.getElementById('btn-validation').disabled = true;
+    document.getElementById('btn-exception').disabled = true;
+    document.getElementById('btn-erp').disabled = true;
+    document.getElementById('btn-audit').disabled = true;
+    document.getElementById('btn-pipeline').disabled = true;
+}
+
+function runModel(modelName) {
+    if (!selectedSessionId) {
+        alert('Please select an invoice first');
+        return;
+    }
+    
+    // Highlight the step
+    document.getElementById('step-' + modelName).classList.add('active');
+    
+    // Redirect to the specific model page
+    const urls = {
+        'ocr': `/ocr/${selectedSessionId}/`,
+        'extraction': `/extraction/${selectedSessionId}/`,
+        'validation': `/validation/${selectedSessionId}/`,
+        'exception': `/exception/${selectedSessionId}/`,
+        'erp': `/erp/${selectedSessionId}/`,
+        'audit': `/audit/${selectedSessionId}/`
+    };
+    
+    if (urls[modelName]) {
+        window.location.href = urls[modelName];
+    }
+}
+
+function runCompletePipeline() {
+    if (!selectedSessionId) {
+        alert('Please select an invoice first');
+        return;
+    }
+    
+    if (confirm('This will run all models in sequence. Continue?')) {
+        // Start with OCR
+        window.location.href = `/ocr/${selectedSessionId}/`;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="stage-info">
+    <h2>⚠️ Exception Handling</h2>
+    <p>Handle validation issues and data exceptions with AI assistance</p>
+</div>
+
+<div class="model-chain">
+    <div class="model-step completed">📤 Upload</div>
+    <div class="arrow">→</div>
+    <div class="model-step completed">🔍 OCR</div>
+    <div class="arrow">→</div>
+    <div class="model-step completed">🤖 Extraction</div>
+    <div class="arrow">→</div>
+    <div class="model-step completed">✅ Validation</div>
+    <div class="arrow">→</div>
+    <div class="model-step active">⚠️ Exception</div>
+    <div class="arrow">→</div>
+    <div class="model-step">🔗 ERP</div>
+    <div class="arrow">→</div>
+    <div class="model-step">📋 Audit</div>
+</div>
+
+<div class="stage-info">
+    <h3>Invoice Information</h3>
+    <p><strong>Filename:</strong> {{ invoice_file.original_filename }}</p>
+    <p><strong>Session ID:</strong> {{ invoice_file.session_id }}</p>
+    <p><strong>Status:</strong> <span class="stage-status status-{{ stage.status }}">{{ stage.get_status_display }}</span></p>
+</div>
+
+{% if suggestions %}
+<div class="suggestions-box">
+    <h3>💡 AI Suggestions</h3>
+    {% for suggestion in suggestions %}
+    <div class="suggestion-item">
+        <strong>{{ suggestion.get_priority_display }}</strong><br>
+        <p>{{ suggestion.reason }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if issues %}
+<div class="stage-info">
+    <h3>⚠️ Issues Found ({{ issues.count }})</h3>
+    {% for issue in issues %}
+    <div class="issue-card" style="border-left: 4px solid 
+        {% if issue.severity == 'high' %}#dc3545{% elif issue.severity == 'medium' %}#ffc107{% else %}#17a2b8{% endif %}; 
+        padding: 15px; margin: 10px 0; background: #f8f9fa;">
+        <h5>{{ issue.get_issue_type_display }} - {{ issue.get_severity_display|upper }}</h5>
+        <p><strong>Field:</strong> {{ issue.field_name }}</p>
+        <p><strong>Description:</strong> {{ issue.description }}</p>
+        {% if issue.expected_value %}
+        <p><strong>Expected:</strong> {{ issue.expected_value }}</p>
+        {% endif %}
+        {% if issue.actual_value %}
+        <p><strong>Actual:</strong> {{ issue.actual_value }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if validation_output %}
+<div class="stage-info">
+    <h3>📄 Input from Validation Stage</h3>
+    <div class="data-display">
+        <pre>{{ validation_output|pprint }}</pre>
+    </div>
+</div>
+{% endif %}
+
+<div class="stage-info">
+    <h3>🚀 Start Exception Handling</h3>
+    <p>Automatically resolve validation issues and prepare data corrections.</p>
+    
+    <div class="action-buttons">
+        <button id="processBtn" class="btn btn-primary" onclick="processException()">
+            ⚠️ Handle Exceptions
+        </button>
+    </div>
+    
+    <div id="processingStatus" style="display: none; margin-top: 20px;">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <p id="statusMessage">Processing...</p>
+    </div>
+    
+    <div id="results" style="display: none; margin-top: 20px;">
+        <h4>Exception Handling Results</h4>
+        <div class="data-display">
+            <pre id="outputData"></pre>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="goToNextStage()">
+                Next: ERP Integration →
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let nextStageUrl = '';
+
+function processException() {
+    const btn = document.getElementById('processBtn');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Processing...';
+    
+    document.getElementById('processingStatus').style.display = 'block';
+    animateProgress();
+    
+    fetch('{% url "process_exception_action" invoice_file.session_id %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('statusMessage').innerHTML = '✅ ' + data.message;
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('outputData').textContent = JSON.stringify(data.output, null, 2);
+            document.getElementById('results').style.display = 'block';
+            nextStageUrl = data.next_stage_url;
+        } else {
+            document.getElementById('statusMessage').innerHTML = '❌ Error: ' + data.error;
+            btn.disabled = false;
+            btn.innerHTML = '⚠️ Retry Exception Handling';
+        }
+    })
+    .catch(error => {
+        document.getElementById('statusMessage').innerHTML = '❌ Error: ' + error.message;
+        btn.disabled = false;
+        btn.innerHTML = '⚠️ Retry Exception Handling';
+    });
+}
+
+function animateProgress() {
+    let width = 0;
+    const interval = setInterval(() => {
+        if (width >= 90) {
+            clearInterval(interval);
+        } else {
+            width += 10;
+            document.getElementById('progressFill').style.width = width + '%';
+        }
+    }, 500);
+}
+
+function goToNextStage() {
+    if (nextStageUrl) {
+        window.location.href = nextStageUrl;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="stage-info">
+    <h2>📊 Invoice Tracking Details</h2>
+    <p>Complete processing history and status for: <strong>{{ invoice_file.original_filename }}</strong></p>
+</div>
+
+<!-- Invoice Summary Card -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="card-body">
+                <h4 class="card-title">📄 Invoice Information</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Filename:</strong> {{ invoice_file.original_filename }}</p>
+                        <p><strong>Session ID:</strong> <code>{{ invoice_file.session_id }}</code></p>
+                        <p><strong>File Size:</strong> {{ invoice_file.file_size|filesizeformat }}</p>
+                        <p><strong>File Type:</strong> {{ invoice_file.file_type }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            <span class="badge" style="background: 
+                                {% if invoice_file.status == 'completed' %}#28a745
+                                {% elif invoice_file.status == 'processing' %}#ffc107
+                                {% elif invoice_file.status == 'failed' %}#dc3545
+                                {% else %}#17a2b8{% endif %}">
+                                {{ invoice_file.get_status_display|upper }}
+                            </span>
+                        </p>
+                        <p><strong>Current Stage:</strong> {{ invoice_file.current_stage|default:"N/A" }}</p>
+                        <p><strong>Uploaded:</strong> {{ invoice_file.uploaded_at|date:"Y-m-d H:i:s" }}</p>
+                        <p><strong>Uploaded By:</strong> {{ invoice_file.uploaded_by|default:"System" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Pipeline Progress -->
+<div class="stage-info">
+    <h4>🔄 Processing Pipeline Progress</h4>
+    <div class="model-chain" style="margin: 20px 0;">
+        {% for stage in stages %}
+        <div class="model-step 
+            {% if stage.status == 'completed' %}completed
+            {% elif stage.status == 'processing' %}active
+            {% elif stage.status == 'failed' %}failed
+            {% endif %}">
+            {% if stage.stage_name == 'ocr' %}🔍
+            {% elif stage.stage_name == 'extraction' %}🤖
+            {% elif stage.stage_name == 'validation' %}✅
+            {% elif stage.stage_name == 'exception' %}⚠️
+            {% elif stage.stage_name == 'erp' %}🔗
+            {% elif stage.stage_name == 'audit' %}📋
+            {% endif %}
+            {{ stage.stage_name|title }}
+        </div>
+        {% if not forloop.last %}
+        <div class="arrow">→</div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Stages Details -->
+<div class="row mb-4">
+    {% for stage in stages %}
+    <div class="col-md-6 mb-3">
+        <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="card-header" style="background: 
+                {% if stage.status == 'completed' %}rgba(40, 167, 69, 0.3)
+                {% elif stage.status == 'processing' %}rgba(255, 193, 7, 0.3)
+                {% elif stage.status == 'failed' %}rgba(220, 53, 69, 0.3)
+                {% else %}rgba(108, 117, 125, 0.3){% endif %};">
+                <h5>
+                    {% if stage.stage_name == 'ocr' %}🔍
+                    {% elif stage.stage_name == 'extraction' %}🤖
+                    {% elif stage.stage_name == 'validation' %}✅
+                    {% elif stage.stage_name == 'exception' %}⚠️
+                    {% elif stage.stage_name == 'erp' %}🔗
+                    {% elif stage.stage_name == 'audit' %}📋
+                    {% endif %}
+                    {{ stage.stage_name|title }} Stage
+                    <span class="badge float-end" style="background: 
+                        {% if stage.status == 'completed' %}#28a745
+                        {% elif stage.status == 'processing' %}#ffc107
+                        {% elif stage.status == 'failed' %}#dc3545
+                        {% else %}#6c757d{% endif %}">
+                        {{ stage.get_status_display }}
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if stage.started_at %}
+                <p><strong>Started:</strong> {{ stage.started_at|date:"Y-m-d H:i:s" }}</p>
+                {% endif %}
+                {% if stage.completed_at %}
+                <p><strong>Completed:</strong> {{ stage.completed_at|date:"Y-m-d H:i:s" }}</p>
+                {% endif %}
+                {% if stage.processing_time %}
+                <p><strong>Processing Time:</strong> {{ stage.processing_time|floatformat:2 }} seconds</p>
+                {% endif %}
+                {% if stage.model_used %}
+                <p><strong>Model Used:</strong> {{ stage.model_used }}</p>
+                {% endif %}
+                {% if stage.confidence_score %}
+                <p><strong>Confidence:</strong> 
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ stage.confidence_score|floatformat:0 }}%; background: linear-gradient(90deg, #667eea, #764ba2);" 
+                             aria-valuenow="{{ stage.confidence_score|floatformat:0 }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ stage.confidence_score|floatformat:0 }}%
+                        </div>
+                    </div>
+                </p>
+                {% endif %}
+                {% if stage.error_message %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Error:</strong> {{ stage.error_message }}
+                </div>
+                {% endif %}
+                {% if stage.output_data %}
+                <details style="margin-top: 10px;">
+                    <summary style="cursor: pointer; color: #667eea; font-weight: bold;">View Output Data</summary>
+                    <pre style="background: #1a1a1a; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto; margin-top: 10px;">{{ stage.output_data|pprint }}</pre>
+                </details>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-muted">No processing stages found.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Issues Section -->
+{% if issues %}
+<div class="stage-info">
+    <h4>⚠️ Open Issues ({{ issues.count }})</h4>
+    {% for issue in issues %}
+    <div class="alert" style="background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.5);">
+        <h6>
+            <span class="badge" style="background: 
+                {% if issue.severity == 'high' %}#dc3545
+                {% elif issue.severity == 'medium' %}#ffc107
+                {% else %}#17a2b8{% endif %}">
+                {{ issue.get_severity_display }}
+            </span>
+            {{ issue.get_issue_type_display }}
+        </h6>
+        <p><strong>Field:</strong> {{ issue.field_name }}</p>
+        <p>{{ issue.description }}</p>
+        {% if issue.expected_value %}
+        <p><small><strong>Expected:</strong> {{ issue.expected_value }} | <strong>Actual:</strong> {{ issue.actual_value }}</small></p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- AI Suggestions -->
+{% if suggestions %}
+<div class="stage-info">
+    <h4>💡 AI Suggestions</h4>
+    {% for suggestion in suggestions %}
+    <div class="card mb-2" style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3);">
+        <div class="card-body">
+            <h6>
+                <span class="badge" style="background: 
+                    {% if suggestion.priority == 'high' %}#dc3545
+                    {% elif suggestion.priority == 'medium' %}#ffc107
+                    {% else %}#17a2b8{% endif %}">
+                    {{ suggestion.get_priority_display }} Priority
+                </span>
+                Next Stage: {{ suggestion.suggested_next_stage|title }}
+            </h6>
+            <p>{{ suggestion.reason }}</p>
+            <p><small><strong>Confidence:</strong> {{ suggestion.confidence|floatformat:0 }}%</small></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Processing History Timeline -->
+<div class="stage-info">
+    <h4>📜 Processing History Timeline</h4>
+    <div style="border-left: 3px solid #667eea; padding-left: 20px;">
+        {% for entry in history %}
+        <div style="margin-bottom: 20px; position: relative;">
+            <div style="position: absolute; left: -28px; top: 0; width: 15px; height: 15px; background: #667eea; border-radius: 50%; border: 3px solid #1a1a1a;"></div>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px;">
+                <p style="margin: 0; color: #667eea; font-weight: bold;">{{ entry.timestamp|date:"Y-m-d H:i:s" }}</p>
+                <p style="margin: 5px 0; font-size: 1.1em;"><strong>{{ entry.action }}</strong></p>
+                <p style="margin: 5px 0;">{{ entry.description }}</p>
+                <p style="margin: 0; font-size: 0.9em; opacity: 0.7;">Agent: {{ entry.performed_by_agent }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No history entries found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons" style="margin-top: 30px;">
+    <a href="{% url 'tracking_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+    {% if invoice_file.status != 'completed' %}
+    <a href="{% url 'run_models_page' %}" class="btn btn-primary">
+        <i class="fas fa-play"></i> Continue Processing
+    </a>
+    {% endif %}
+</div>
+
+<style>
+.model-step {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 8px;
+    background: rgba(108, 117, 125, 0.3);
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.model-step.completed {
+    background: rgba(40, 167, 69, 0.5);
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.model-step.active {
+    background: rgba(255, 193, 7, 0.5);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.model-step.failed {
+    background: rgba(220, 53, 69, 0.5);
+}
+
+.arrow {
+    display: inline-block;
+    color: #667eea;
+    font-size: 1.5em;
+    margin: 0 5px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+details summary:hover {
+    color: #764ba2 !important;
+}
+</style>
+{% endblock %}

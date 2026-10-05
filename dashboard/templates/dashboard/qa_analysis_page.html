@@ -1,0 +1,370 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="stage-info">
+    <h2>🤖 AI-Powered Invoice Q&A</h2>
+    <p>Ask questions about processed invoices - AI analyzes all agent outputs to provide answers</p>
+</div>
+
+<div class="row" style="margin-top: 30px;">
+    <!-- Left Column: Q&A Interface -->
+    <div class="col-md-8">
+        <div class="stage-info">
+            <h3>💬 Ask Questions</h3>
+            <p>Examples: "What is the total amount?", "Which vendor sent this invoice?", "What validation issues were found?"</p>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="questionInput"><strong>Your Question:</strong></label>
+                <textarea 
+                    id="questionInput" 
+                    class="form-control" 
+                    rows="3" 
+                    placeholder="Type your question here..."
+                    style="font-size: 16px; padding: 15px;"
+                ></textarea>
+            </div>
+            
+            <div class="action-buttons" style="margin-top: 15px;">
+                <button class="btn btn-primary" onclick="askQuestion()" id="askBtn">
+                    <i class="fas fa-paper-plane"></i> Ask AI
+                </button>
+                <button class="btn btn-secondary" onclick="clearConversation()" id="clearBtn">
+                    <i class="fas fa-trash"></i> Clear History
+                </button>
+            </div>
+            
+            <!-- Conversation History -->
+            <div id="conversationHistory" style="margin-top: 30px;">
+                <h4>Conversation History</h4>
+                <div id="chatMessages" style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f8f9fa;">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-comments" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p>No questions asked yet. Start by asking a question above!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Available Data & Quick Questions -->
+    <div class="col-md-4">
+        <div class="stage-info">
+            <h4>📊 Available Invoice Data</h4>
+            <div id="dataStats" style="margin-top: 15px;">
+                <p><i class="fas fa-spinner fa-spin"></i> Loading statistics...</p>
+            </div>
+        </div>
+        
+        <div class="stage-info" style="margin-top: 20px;">
+            <h4>💡 Quick Questions</h4>
+            <div class="quick-questions">
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('What is the total invoice amount?')">
+                    💰 Total Amount
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('Who is the vendor?')">
+                    🏢 Vendor Info
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('What is the invoice number?')">
+                    📄 Invoice Number
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('What validation issues were found?')">
+                    ⚠️ Validation Issues
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('What exceptions were handled?')">
+                    🔧 Exceptions
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('What is the ERP posting status?')">
+                    🔗 ERP Status
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('Show me all line items')">
+                    📋 Line Items
+                </button>
+                <button class="btn btn-sm btn-outline-primary" style="margin: 5px; width: 100%;" onclick="quickQuestion('Summarize the complete invoice processing')">
+                    📊 Full Summary
+                </button>
+            </div>
+        </div>
+        
+        <div class="stage-info" style="margin-top: 20px;">
+            <h4>🎯 Processing Stages</h4>
+            <div id="stagesInfo" style="font-size: 14px;">
+                <div style="margin: 8px 0;"><i class="fas fa-check-circle text-success"></i> OCR Extraction</div>
+                <div style="margin: 8px 0;"><i class="fas fa-check-circle text-success"></i> Data Extraction</div>
+                <div style="margin: 8px 0;"><i class="fas fa-check-circle text-success"></i> Validation</div>
+                <div style="margin: 8px 0;"><i class="fas fa-check-circle text-success"></i> Exception Handling</div>
+                <div style="margin: 8px 0;"><i class="fas fa-check-circle text-success"></i> ERP Integration</div>
+                <div style="margin: 8px 0;"><i class="fas fa-check-circle text-success"></i> Audit Logging</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-message {
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 10px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.user-message {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: 50px;
+    text-align: right;
+}
+
+.ai-message {
+    background: white;
+    border: 1px solid #e0e0e0;
+    margin-right: 50px;
+}
+
+.message-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.message-content {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.ai-message .message-content {
+    color: #333;
+}
+
+.loading-message {
+    background: #f0f0f0;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let conversationHistory = [];
+
+// Load data statistics on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadDataStatistics();
+});
+
+function loadDataStatistics() {
+    fetch('/analyze-agent-outputs/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question: 'Get statistics',
+            get_stats: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.statistics) {
+            displayStatistics(data.statistics);
+        }
+    })
+    .catch(error => {
+        document.getElementById('dataStats').innerHTML = 
+            '<p class="text-muted">Statistics unavailable</p>';
+    });
+}
+
+function displayStatistics(stats) {
+    const html = `
+        <div class="stat-card">
+            <div class="stat-value">${stats.total_sessions || 0}</div>
+            <div class="stat-label">Processed Sessions</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="stat-value">${stats.total_files || 0}</div>
+            <div class="stat-label">Total Output Files</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="stat-value">${stats.agents_used || 0}</div>
+            <div class="stat-label">Agent Types Used</div>
+        </div>
+    `;
+    document.getElementById('dataStats').innerHTML = html;
+}
+
+function quickQuestion(question) {
+    document.getElementById('questionInput').value = question;
+    askQuestion();
+}
+
+function askQuestion() {
+    const question = document.getElementById('questionInput').value.trim();
+    
+    if (!question) {
+        alert('Please enter a question');
+        return;
+    }
+    
+    // Add user message to chat
+    addMessageToChat('user', question);
+    
+    // Clear input
+    document.getElementById('questionInput').value = '';
+    
+    // Disable button and show loading
+    const askBtn = document.getElementById('askBtn');
+    askBtn.disabled = true;
+    askBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    
+    // Show loading message
+    const loadingId = 'loading-' + Date.now();
+    addLoadingMessage(loadingId);
+    
+    // Send to API
+    fetch('/analyze-agent-outputs/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question: question,
+            conversation_history: conversationHistory
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove loading message
+        removeLoadingMessage(loadingId);
+        
+        // Add AI response
+        if (data.answer) {
+            addMessageToChat('ai', data.answer, data.sources);
+            conversationHistory.push({
+                question: question,
+                answer: data.answer
+            });
+        } else if (data.error) {
+            addMessageToChat('ai', 'Error: ' + data.error);
+        }
+        
+        // Re-enable button
+        askBtn.disabled = false;
+        askBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Ask AI';
+    })
+    .catch(error => {
+        removeLoadingMessage(loadingId);
+        addMessageToChat('ai', 'Error connecting to AI service: ' + error.message);
+        askBtn.disabled = false;
+        askBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Ask AI';
+    });
+}
+
+function addMessageToChat(type, content, sources = null) {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    // Remove welcome message if it exists
+    if (chatMessages.querySelector('.text-center')) {
+        chatMessages.innerHTML = '';
+    }
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${type}-message`;
+    
+    let html = `
+        <div class="message-label">${type === 'user' ? '👤 You' : '🤖 AI Assistant'}</div>
+        <div class="message-content">${escapeHtml(content)}</div>
+    `;
+    
+    if (sources && sources.length > 0) {
+        html += `
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 12px;">
+                <strong>Sources:</strong> ${sources.join(', ')}
+            </div>
+        `;
+    }
+    
+    messageDiv.innerHTML = html;
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addLoadingMessage(id) {
+    const chatMessages = document.getElementById('chatMessages');
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = id;
+    loadingDiv.className = 'loading-message';
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI is analyzing invoice data...';
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function removeLoadingMessage(id) {
+    const loadingMsg = document.getElementById(id);
+    if (loadingMsg) {
+        loadingMsg.remove();
+    }
+}
+
+function clearConversation() {
+    if (confirm('Clear conversation history?')) {
+        conversationHistory = [];
+        document.getElementById('chatMessages').innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-comments" style="font-size: 48px; opacity: 0.3;"></i>
+                <p>Conversation cleared. Start a new conversation!</p>
+            </div>
+        `;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML.replace(/\n/g, '<br>');
+}
+
+// Allow Enter key to submit (Shift+Enter for new line)
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('questionInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            askQuestion();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="stage-info">
+    <h2>✅ Validation</h2>
+    <p>Validate extracted data against business rules and constraints</p>
+</div>
+
+<div class="model-chain">
+    <div class="model-step completed">📤 Upload</div>
+    <div class="arrow">→</div>
+    <div class="model-step completed">🔍 OCR</div>
+    <div class="arrow">→</div>
+    <div class="model-step completed">🤖 Extraction</div>
+    <div class="arrow">→</div>
+    <div class="model-step active">✅ Validation</div>
+    <div class="arrow">→</div>
+    <div class="model-step">⚠️ Exception</div>
+    <div class="arrow">→</div>
+    <div class="model-step">🔗 ERP</div>
+    <div class="arrow">→</div>
+    <div class="model-step">📋 Audit</div>
+</div>
+
+<div class="stage-info">
+    <h3>Invoice Information</h3>
+    <p><strong>Filename:</strong> {{ invoice_file.original_filename }}</p>
+    <p><strong>Session ID:</strong> {{ invoice_file.session_id }}</p>
+    <p><strong>Status:</strong> <span class="stage-status status-{{ stage.status }}">{{ stage.get_status_display }}</span></p>
+</div>
+
+{% if suggestions %}
+<div class="suggestions-box">
+    <h3>💡 AI Suggestions</h3>
+    {% for suggestion in suggestions %}
+    <div class="suggestion-item">
+        <strong>{{ suggestion.get_priority_display }}</strong><br>
+        <p>{{ suggestion.reason }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if extraction_output %}
+<div class="stage-info">
+    <h3>📄 Input from Extraction Stage</h3>
+    <div class="data-display">
+        <pre>{{ extraction_output|pprint }}</pre>
+    </div>
+</div>
+{% endif %}
+
+<div class="stage-info">
+    <h3>🚀 Start Validation</h3>
+    <p>Validate invoice data: amounts, dates, vendor information, PO numbers, and business rules.</p>
+    
+    <div class="action-buttons">
+        <button id="processBtn" class="btn btn-primary" onclick="processValidation()">
+            ✅ Start Validation
+        </button>
+    </div>
+    
+    <div id="processingStatus" style="display: none; margin-top: 20px;">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <p id="statusMessage">Processing...</p>
+    </div>
+    
+    <div id="results" style="display: none; margin-top: 20px;">
+        <h4>Validation Results</h4>
+        <div class="data-display">
+            <pre id="outputData"></pre>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="goToNextStage()">
+                Next: Exception Handling →
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let nextStageUrl = '';
+
+function processValidation() {
+    const btn = document.getElementById('processBtn');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Processing...';
+    
+    document.getElementById('processingStatus').style.display = 'block';
+    animateProgress();
+    
+    fetch('{% url "process_validation_action" invoice_file.session_id %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('statusMessage').innerHTML = '✅ ' + data.message;
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('outputData').textContent = JSON.stringify(data.output, null, 2);
+            document.getElementById('results').style.display = 'block';
+            nextStageUrl = data.next_stage_url;
+        } else {
+            document.getElementById('statusMessage').innerHTML = '❌ Error: ' + data.error;
+            btn.disabled = false;
+            btn.innerHTML = '✅ Retry Validation';
+        }
+    })
+    .catch(error => {
+        document.getElementById('statusMessage').innerHTML = '❌ Error: ' + error.message;
+        btn.disabled = false;
+        btn.innerHTML = '✅ Retry Validation';
+    });
+}
+
+function animateProgress() {
+    let width = 0;
+    const interval = setInterval(() => {
+        if (width >= 90) {
+            clearInterval(interval);
+        } else {
+            width += 10;
+            document.getElementById('progressFill').style.width = width + '%';
+        }
+    }, 500);
+}
+
+function goToNextStage() {
+    if (nextStageUrl) {
+        window.location.href = nextStageUrl;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="stage-info">
+    <h2>📤 Upload Invoice for Processing</h2>
+    <p>Upload an invoice file to begin the AI-powered processing pipeline. The system will automatically guide you through each stage.</p>
+</div>
+
+<div class="model-chain">
+    <div class="model-step active">
+        <div>📤</div>
+        <div>Upload</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step">
+        <div>🔍</div>
+        <div>OCR</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step">
+        <div>🤖</div>
+        <div>Extraction</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step">
+        <div>✅</div>
+        <div>Validation</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step">
+        <div>⚠️</div>
+        <div>Exception</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step">
+        <div>🔗</div>
+        <div>ERP</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="model-step">
+        <div>📋</div>
+        <div>Audit</div>
+    </div>
+</div>
+
+<div class="stage-info">
+    <h3>Select Invoice File</h3>
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %}
+        <div style="margin: 20px 0;">
+            <input type="file" 
+                   name="invoice_file" 
+                   id="invoiceFile" 
+                   accept=".pdf,.jpg,.jpeg,.png,.tiff,.bmp"
+                   required
+                   style="padding: 10px; width: 100%; max-width: 500px;">
+        </div>
+        
+        <div style="font-size: 0.9em; color: #666; margin-bottom: 20px;">
+            Supported formats: PDF, JPG, JPEG, PNG, TIFF, BMP
+        </div>
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">
+                📤 Upload & Start Processing
+            </button>
+            <a href="{% url 'tracking_list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="stage-info">
+    <h3>💡 What Happens Next?</h3>
+    <ol>
+        <li><strong>OCR Processing:</strong> Extract text from the invoice document</li>
+        <li><strong>Data Extraction:</strong> AI extracts structured data (vendor, amounts, dates)</li>
+        <li><strong>Validation:</strong> Validate extracted data against business rules</li>
+        <li><strong>Exception Handling:</strong> Resolve any validation issues</li>
+        <li><strong>ERP Integration:</strong> Post the invoice to your ERP system</li>
+        <li><strong>Audit Logging:</strong> Complete audit trail for compliance</li>
+    </ol>
+    <p><strong>Each stage will suggest the next best action based on the results!</strong></p>
+</div>
+
+{% if messages %}
+<div style="margin-top: 20px;">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" style="padding: 15px; background: #55efc4; color: #00b894; border-radius: 8px; margin-bottom: 10px;">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('invoiceFile');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return false;
+        }
+        
+        // Show loading state
+        const btn = this.querySelector('.btn-primary');
+        btn.innerHTML = '⏳ Uploading...';
+        btn.disabled = true;
+    });
+</script>
+{% endblock %}

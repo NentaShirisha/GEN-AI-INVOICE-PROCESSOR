@@ -1,0 +1,94 @@
+{% extends "dashboard/base_processing.html" %}
+
+{% block content %}
+<div class="stage-info">
+    <h2>📊 Invoice Tracking & History</h2>
+    <p>Track all uploaded invoices and their processing status across all stages.</p>
+    
+    <div class="action-buttons" style="margin-top: 20px;">
+        <a href="{% url 'upload_page' %}" class="btn btn-primary">
+            ➕ Upload New Invoice
+        </a>
+    </div>
+</div>
+
+<div class="stage-info">
+    <h3>All Invoices</h3>
+    
+    {% if invoice_files %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <th style="padding: 15px; text-align: left;">Session ID</th>
+                    <th style="padding: 15px; text-align: left;">Filename</th>
+                    <th style="padding: 15px; text-align: left;">Status</th>
+                    <th style="padding: 15px; text-align: left;">Current Stage</th>
+                    <th style="padding: 15px; text-align: left;">Uploaded</th>
+                    <th style="padding: 15px; text-align: left;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in invoice_files %}
+                <tr style="border-bottom: 1px solid #ddd; {% if forloop.counter|divisibleby:2 %}background: #f8f9fa;{% endif %}">
+                    <td style="padding: 12px; font-family: monospace; font-size: 0.9em;">
+                        {{ file.session_id|slice:":8" }}...
+                    </td>
+                    <td style="padding: 12px;">
+                        <strong>{{ file.original_filename }}</strong><br>
+                        <small style="color: #666;">{{ file.file_size|filesizeformat }}</small>
+                    </td>
+                    <td style="padding: 12px;">
+                        <span class="stage-status status-{{ file.status|cut:'_' }}">
+                            {{ file.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">
+                        {{ file.current_stage|upper }}
+                    </td>
+                    <td style="padding: 12px;">
+                        {{ file.uploaded_at|date:"M d, Y H:i" }}
+                    </td>
+                    <td style="padding: 12px;">
+                        <a href="{% url 'tracking_detail' file.session_id %}" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9em;">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #999;">
+        <p style="font-size: 1.2em;">📭 No invoices uploaded yet</p>
+        <p>Upload your first invoice to get started!</p>
+        <a href="{% url 'upload_page' %}" class="btn btn-primary" style="margin-top: 20px;">
+            Upload Invoice
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="stage-info">
+    <h3>📈 Quick Stats</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+        <div style="background: #667eea; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2em; font-weight: bold;">{{ invoice_files.count }}</div>
+            <div>Total Invoices</div>
+        </div>
+        <div style="background: #00b894; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2em; font-weight: bold;">{{ invoice_files|length }}</div>
+            <div>Completed</div>
+        </div>
+        <div style="background: #0984e3; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2em; font-weight: bold;">0</div>
+            <div>Processing</div>
+        </div>
+        <div style="background: #d63031; color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2em; font-weight: bold;">0</div>
+            <div>Failed</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

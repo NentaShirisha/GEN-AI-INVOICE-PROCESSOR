@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Invoice Processor Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard_styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Invoice Processing Dashboard</h1>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Invoices</h3>
+                <p id="total-invoices">{{ total_invoices }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Processed Today</h3>
+                <p id="processed-today">{{ processed_today }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Exception Rate</h3>
+                <p id="exception-rate">{{ exception_rate }}%</p>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h2>Upload Invoice (Stage 1-2 Processing)</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" id="invoice-file" accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff" required>
+                <button type="submit">Upload & Process (Staged)</button>
+            </form>
+            <div id="upload-status" style="margin-top: 10px; display: none;">
+                <p id="status-message"></p>
+                <div id="processing-details" style="background: #f9f9f9; padding: 10px; border-radius: 5px; display: none;">
+                    <h4>Processing Results:</h4>
+                    <pre id="processing-results"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts">
+            <h2>Analytics</h2>
+            <canvas id="processingChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="invoice-list">
+            <h2>Recent Invoices</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice Number</th>
+                        <th>Vendor</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-table-body">
+                    {% for invoice in recent_invoices %}
+                    <tr>
+                        <td>{{ invoice.invoice_number }}</td>
+                        <td>{{ invoice.vendor.name }}</td>
+                        <td>${{ invoice.total_amount }}</td>
+                        <td>{{ invoice.status }}</td>
+                        <td>
+                            <button onclick="viewInvoice({{ invoice.id }})">View</button>
+                            <button onclick="processInvoice({{ invoice.id }})">Process</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js for analytics
+        const ctx = document.getElementById('processingChart').getContext('2d');
+        const processingChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Invoices Processed',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        // Upload form handling with staged processing
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('file', document.getElementById('invoice-file').files[0]);
+
+            const statusDiv = document.getElementById('upload-status');
+            const statusMessage = document.getElementById('status-message');
+            const processingDetails = document.getElementById('processing-details');
+            const processingResults = document.getElementById('processing-results');
+
+            statusDiv.style.display = 'block';
+            statusMessage.textContent = 'Processing invoice with Stage 1-2 pipeline...';
+            processingDetails.style.display = 'none';
+
+            fetch('/upload/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    statusMessage.textContent = 'Error: ' + data.error;
+                    statusMessage.style.color = 'red';
+                } else {
+                    statusMessage.textContent = 'Invoice processed successfully!';
+                    statusMessage.style.color = 'green';
+                    processingDetails.style.display = 'block';
+                    processingResults.textContent = JSON.stringify(data, null, 2);
+                    location.reload(); // Refresh to show new invoice
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusMessage.textContent = 'Upload failed: ' + error.message;
+                statusMessage.style.color = 'red';
+            });
+        });
+
+        function processInvoice(invoiceId) {
+            fetch(`/api/invoices/${invoiceId}/process/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Processing started!');
+            });
+        }
+
+        function viewInvoice(invoiceId) {
+            window.location.href = `/invoice/${invoiceId}/`;
+        }
+    </script>
+</body>
+</html>

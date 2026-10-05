@@ -1,0 +1,92 @@
+{% load static %}
+<!-- Navigation Header -->
+<style>
+    .main-navbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .main-navbar .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white !important;
+        text-decoration: none;
+    }
+    
+    .main-navbar .navbar-brand:hover {
+        opacity: 0.9;
+    }
+    
+    .main-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.9) !important;
+        padding: 8px 20px !important;
+        margin: 0 5px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .main-navbar .nav-link:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white !important;
+    }
+    
+    .main-navbar .nav-link.active {
+        background: rgba(255, 255, 255, 0.3);
+        color: white !important;
+        font-weight: bold;
+    }
+    
+    .main-navbar .navbar-toggler {
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .main-navbar .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+</style>
+
+<nav class="main-navbar navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">
+            <i class="fas fa-robot me-2"></i>
+            AI Invoice Processor
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                        <i class="fas fa-home me-1"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'upload_page' %}active{% endif %}" href="{% url 'upload_page' %}">
+                        <i class="fas fa-cloud-upload-alt me-1"></i> Upload
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'run_models_page' %}active{% endif %}" href="{% url 'run_models_page' %}">
+                        <i class="fas fa-play-circle me-1"></i> Run Models
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'qa_analysis_page' %}active{% endif %}" href="{% url 'qa_analysis_page' %}">
+                        <i class="fas fa-comments me-1"></i> Q&A Analysis
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'tracking_list' %}active{% endif %}" href="{% url 'tracking_list' %}">
+                        <i class="fas fa-history me-1"></i> History
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
